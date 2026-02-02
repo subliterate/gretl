@@ -32,3 +32,9 @@ Gretl uses GNU autoconf.  Here's the quick way to get going:
 
 See the Gretl User's Guide, Appendix C ("Building gretl") for further
 details [ http://gretl.sourceforge.net/#man ]
+
+For comprehensive build guidance, troubleshooting, and optimization options:
+- README.md - Quick start and feature overview
+- BUILD-TROUBLESHOOTING.md - Solutions to common build problems
+- CONFIGURE-OPTIONS.md - Complete reference for all configure options
+- README.packages - Distribution-specific package installation commands

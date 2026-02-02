@@ -168,12 +168,13 @@ Quick optimization guide:
 
 ## Getting More Help
 
-1. **Configure options reference:** `CONFIGURE-OPTIONS.md` (comprehensive guide)
-2. **Installation basics:** `INSTALL`
-3. **Distribution-specific packages:** `README.packages`
-4. **Package maintainer notes:** `README.packagers`
-5. **Quick options list:** `./configure --help`
-6. **Gretl website:** http://gretl.sourceforge.net/
+1. **Main documentation:** [README.md](README.md) - Complete guide with quick start
+2. **Configure options reference:** [CONFIGURE-OPTIONS.md](CONFIGURE-OPTIONS.md) - All build options explained
+3. **Installation basics:** [INSTALL](INSTALL)
+4. **Distribution-specific packages:** [README.packages](README.packages)
+5. **Package maintainer notes:** [README.packagers](README.packagers)
+6. **Quick options list:** `./configure --help`
+7. **Gretl website:** http://gretl.sourceforge.net/
 
 ## Contributing
 

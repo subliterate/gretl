@@ -679,10 +679,11 @@ LAPACK_LIBS='-L/custom/path -llapack -lblas' ./configure
 
 ## Further Reading
 
-- `INSTALL` - Basic installation instructions
-- `README.packages` - Distribution-specific package names
-- `README.packagers` - Important notes for package maintainers
-- `BUILD-TROUBLESHOOTING.md` - Solutions to common build problems
+- [README.md](README.md) - Main documentation with quick start and feature overview
+- [INSTALL](INSTALL) - Basic installation instructions
+- [README.packages](README.packages) - Distribution-specific package names
+- [README.packagers](README.packagers) - Important notes for package maintainers
+- [BUILD-TROUBLESHOOTING.md](BUILD-TROUBLESHOOTING.md) - Solutions to common build problems
 - `./configure --help` - All options with brief descriptions
 
 ---

@@ -9,7 +9,55 @@ needed for building libgretl, gretlcli and gretl_x11.
 It is organized by Linux distribution and expects your contributions 
 to validate and expand to new distributions.
 
-Helio Guilherme, 23 September 2011 
+Helio Guilherme, 23 September 2011
+-----
+Ubuntu 24.04 LTS (Noble Numbat)  (contrib. 2026-02-02)
+
+IMPORTANT NOTES FOR MODERN UBUNTU (24.04+):
+- GTK2 and GtkSourceView 2.0 packages have been REMOVED from Ubuntu 24.04+
+- Gretl will automatically use GTK3 if available (preferred on modern systems)
+- json-glib-1.0 is now REQUIRED (not optional) for configure to succeed
+- After installing dependencies, you MUST run ./configure to detect GTK3
+- Verify GTK3 detection: grep "gtk_version=" config.log should show '3.0'
+
+# Core build dependencies (REQUIRED):
+sudo apt-get install \
+    build-essential \
+    gcc \
+    gfortran \
+    libgmp-dev \
+    libmpfr-dev \
+    libfftw3-dev \
+    liblapack-dev \
+    gnuplot \
+    libxml2-dev \
+    libcurl4-gnutls-dev \
+    libreadline-dev \
+    zlib1g-dev \
+    libjson-glib-dev \
+    libgtk-3-dev \
+    libgtksourceview-4-dev
+
+# Optional dependencies (recommended):
+sudo apt-get install \
+    libopenmpi-dev \
+    mpi-default-bin
+
+# Documentation build (optional):
+sudo apt-get install \
+    texlive \
+    texlive-latex-extra \
+    libxslt1-dev
+
+# Alternative: Install all build dependencies at once (if gretl is in repos):
+sudo apt-get build-dep gretl
+
+# Build commands:
+./configure
+make
+make check
+sudo make install
+
 -----
 Fedora 28               (contrib. 2018-06-03)
 sudo dnf install gcc gmp-devel mpfr-devel fftw-devel lapack-devel \

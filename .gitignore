@@ -11,3 +11,56 @@
 # Build folder
 build/
 Build/
+
+# Autotools generated files
+Makefile
+Makefile.in
+config.h
+config.h.in~
+config.log
+config.status
+configure
+autom4te.cache/
+aclocal.m4
+libtool
+.libs/
+.deps/
+
+# Build artifacts
+*.so
+*.so.*
+*.dylib
+build.h
+builddate
+*.pc
+*_sh
+
+# Desktop files
+*.desktop
+
+# Generated scripts and executables
+gretlcli
+gretlmpi
+gretl_x11
+debug
+nistcheck
+mklang
+mknews
+mkpnglist
+
+# Generated documentation
+*.sty
+gretl-icons.xml
+gretl.lang
+
+# Spec files
+*.spec
+
+# Translation files
+po/Makefile
+po/Makefile.in
+po/POTFILES
+
+# Generated shell scripts
+*.sh
+!tools/*.sh

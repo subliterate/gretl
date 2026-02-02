@@ -156,13 +156,24 @@ grep "USE_GTK3" config.h
 - Package names may differ (e.g., `-devel` suffix instead of `-dev`)
 - See README.packages for specific Fedora commands
 
+## Optimization and Performance
+
+For detailed information about CPU optimizations (SSE2, AVX, OpenMP) and performance tuning, see:
+- **CONFIGURE-OPTIONS.md** - Complete reference for all build options with recommendations
+
+Quick optimization guide:
+- **Desktop build:** `./configure` (auto-detect optimizations)
+- **HPC/maximum performance:** `./configure --enable-sse2 --enable-avx --enable-openmp --with-mpi`
+- **Distribution package:** `./configure --disable-sse2 --disable-avx --disable-openmp` (maximum compatibility)
+
 ## Getting More Help
 
-1. Check the main installation guide: `INSTALL`
-2. Review complete dependency list: `README.packages`
-3. For packagers: `README.packagers`
-4. Configure options: `./configure --help`
-5. Gretl website: http://gretl.sourceforge.net/
+1. **Configure options reference:** `CONFIGURE-OPTIONS.md` (comprehensive guide)
+2. **Installation basics:** `INSTALL`
+3. **Distribution-specific packages:** `README.packages`
+4. **Package maintainer notes:** `README.packagers`
+5. **Quick options list:** `./configure --help`
+6. **Gretl website:** http://gretl.sourceforge.net/
 
 ## Contributing
 

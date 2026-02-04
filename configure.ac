@@ -97,6 +97,10 @@ MAKE="make"
 XML_LIBS=
 FONTREQ="\\RequirePackage{ae}"
 RT_LIB=
+download_x13as="no"
+download_tramo_seats="no"
+X13AS_URL_DEFAULT="https://sourceforge.net/projects/gretl/files/x13as/x13as-linux-64.tar.gz/download"
+TRAMO_SEATS_URL_DEFAULT="https://sourceforge.net/projects/gretl/files/tramo/tramo-seats-linux-64.tar.gz/download"
 
 AC_CHECK_HEADERS(libintl.h,
 	try_nls="yes",
@@ -298,28 +302,48 @@ try_gsf=yes)
 
 AC_ARG_WITH(x-12-arima,
 [  --with-x-12-arima      include X-12-ARIMA support [[default=yes]]],
-if test "x${withval}" = "xno"
-then
-  have_x12a="no"
-else
+[case "${withval}" in
+   no)
+     have_x12a="no"
+     ;;
+   yes)
+     ;;
+   download)
+     download_x13as="yes"
+     ;;
+   *)
+     AC_MSG_ERROR([Invalid value for --with-x-12-arima: '${withval}' (use yes, no, or download)])
+     ;;
+ esac],
+[])
+
+if test "x${have_x12a}" != "xno" ; then
   AC_DEFINE(HAVE_X12A)
   HAVE_X12A=1
-fi,
-AC_DEFINE(HAVE_X12A)
-HAVE_X12A=1)
+fi
 AC_SUBST(HAVE_X12A)
 
 AC_ARG_WITH(tramo-seats,
 [  --with-tramo-seats     include TRAMO/SEATS support [[default=yes]]],
-if test "$withval" = "no"
-then
-  have_tramo="no"
-else
+[case "${withval}" in
+   no)
+     have_tramo="no"
+     ;;
+   yes)
+     ;;
+   download)
+     download_tramo_seats="yes"
+     ;;
+   *)
+     AC_MSG_ERROR([Invalid value for --with-tramo-seats: '${withval}' (use yes, no, or download)])
+     ;;
+ esac],
+[])
+
+if test "x${have_tramo}" != "xno" ; then
   AC_DEFINE(HAVE_TRAMO)
   HAVE_TRAMO=1
-fi,
-AC_DEFINE(HAVE_TRAMO)
-HAVE_TRAMO=1)
+fi
 AC_SUBST(HAVE_TRAMO)
 
 AC_ARG_WITH(libR,
@@ -374,6 +398,37 @@ case $host_cpu in
     win32bit=yes
   ;;
 esac
+
+dnl Optional download of external seasonal-adjustment programs
+if test "x${download_x13as}" = "xyes" || test "x${download_tramo_seats}" = "xyes" ; then
+  case $host_os in
+    linux*)
+      ;;
+    *)
+      AC_MSG_ERROR([Auto-download of x13as/tramo-seats is supported only on Linux at present])
+      ;;
+  esac
+
+  case $host_cpu in
+    x86_64|amd64)
+      ;;
+    *)
+      AC_MSG_ERROR([Auto-download of x13as/tramo-seats currently supports only x86_64/amd64 (host_cpu=${host_cpu})])
+      ;;
+  esac
+
+  AC_CHECK_PROGS([FETCH_PROG], [curl wget])
+  if test "x${FETCH_PROG}" = "x" ; then
+    AC_MSG_ERROR([Need 'curl' or 'wget' to download x13as/tramo-seats])
+  fi
+  AC_CHECK_PROG([TAR_PROG], [tar], [tar])
+  if test "x${TAR_PROG}" = "x" ; then
+    AC_MSG_ERROR([Need 'tar' to unpack downloaded x13as/tramo-seats archives])
+  fi
+fi
+
+AC_SUBST(FETCH_PROG)
+AC_SUBST(TAR_PROG)
 
 AC_DISABLE_STATIC
 AC_LIBTOOL_DLOPEN
@@ -1001,6 +1056,28 @@ if test "${prefix}" = "NONE" ; then
 fi
 AC_DEFINE_UNQUOTED(GRETL_PREFIX, "${prefix}")
 
+dnl Defaults and substitutions for optional downloads
+if test "x${X13AS_URL}" = "x" ; then
+  X13AS_URL="${X13AS_URL_DEFAULT}"
+fi
+if test "x${TRAMO_SEATS_URL}" = "x" ; then
+  TRAMO_SEATS_URL="${TRAMO_SEATS_URL_DEFAULT}"
+fi
+
+AC_SUBST(X13AS_URL)
+AC_SUBST(TRAMO_SEATS_URL)
+AC_SUBST(download_x13as)
+AC_SUBST(download_tramo_seats)
+
+if test "x${download_x13as}" = "xyes" ; then
+  x12a_default_path="${prefix}/share/gretl/x13as/bin/x13as"
+  AC_DEFINE_UNQUOTED([X12A_DEFAULT_PATH], ["$x12a_default_path"])
+fi
+if test "x${download_tramo_seats}" = "xyes" ; then
+  tramo_default_path="${prefix}/share/gretl/tramo/bin/tramo"
+  AC_DEFINE_UNQUOTED([TRAMO_DEFAULT_PATH], ["$tramo_default_path"])
+fi
+
 if test "${gp_3d}" = "yes" ; then
   AC_DEFINE(GNUPLOT3D)
 fi
@@ -1235,7 +1312,9 @@ Configuration:
   Build gretl addons:                     ${build_addons}
   Build gretl_edit:                       ${build_editor}
   X-12-ARIMA support:                     ${have_x12a}
+  Download x13as (for gretl):             ${download_x13as}
   TRAMO/SEATS support:                    ${have_tramo}
+  Download tramo-seats (for gretl):       ${download_tramo_seats}
   libR support:                           ${have_libR}
   ODBC support:                           ${have_odbc}
   GMP support:                            ${have_gmp}

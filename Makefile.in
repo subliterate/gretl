@@ -23,6 +23,12 @@ build_addons = @build_addons@
 build_editor = @build_editor@
 use_xdg = @use_xdg@
 use_xdg_utils = @use_xdg_utils@
+FETCH_PROG = @FETCH_PROG@
+TAR_PROG = @TAR_PROG@
+X13AS_URL = @X13AS_URL@
+TRAMO_SEATS_URL = @TRAMO_SEATS_URL@
+download_x13as = @download_x13as@
+download_tramo_seats = @download_tramo_seats@
 
 ifeq ($(CC),)
   CC = gcc
@@ -71,9 +77,9 @@ SUBDIRS = lib cli $(GUIDIR) $(EDDIR) plugin $(PODIR) share $(XDGDIR) $(ADDONSDIR
 ALLSUBDIRS = lib cli gui editor plugin po share tests doc xdg addons
 
 .PHONY : subdirs $(SUBDIRS) clean installdirs install install-strip \
-install-man uninstall uninstall-main uninstall-xdg tags dist distclean check buildstamp
+install-man uninstall uninstall-main uninstall-xdg extras-fetch extras-install tags dist distclean check buildstamp
 
-subdirs: $(SUBDIRS)
+subdirs: $(SUBDIRS) extras-fetch
 
 $(SUBDIRS):
 	$(MAKE) -C $@
@@ -93,15 +99,95 @@ installdirs:
 
 install: $(SUBDIRS) installdirs install-man
 	for d in $(SUBDIRS) ; do $(MAKE) -C $$d install || exit 1; done
+	$(MAKE) extras-install
 
 install-strip: $(SUBDIRS) installdirs install-man	
 	for d in $(SUBDIRS) ; do $(MAKE) -C $$d install-strip || exit 1; done
+	$(MAKE) extras-install
 
 install-doc: pdfdocs
 	$(MAKE) -C $(DOCDIR) install
 
 install-man:
 	$(tooldir)/install_man $(tooldir) $(DESTDIR)$(prefix) $(topsrc)/gretl.1
+
+EXTRAS_DIR ?= $(CURDIR)/.gretl-extras
+EXTRAS_DISTDIR = $(EXTRAS_DIR)/distfiles
+EXTRAS_UNPACKDIR = $(EXTRAS_DIR)/unpack
+
+X13AS_TARBALL = $(EXTRAS_DISTDIR)/x13as-linux-64.tar.gz
+TRAMO_SEATS_TARBALL = $(EXTRAS_DISTDIR)/tramo-seats-linux-64.tar.gz
+
+X13AS_UNPACK_STAMP = $(EXTRAS_UNPACKDIR)/.x13as-unpacked
+TRAMO_SEATS_UNPACK_STAMP = $(EXTRAS_UNPACKDIR)/.tramo-seats-unpacked
+
+$(X13AS_TARBALL):
+	$(tooldir)/mkinstalldirs $(EXTRAS_DISTDIR)
+	@if [ "x$(download_x13as)" != "xyes" ] ; then exit 0 ; fi ; \
+	echo "Downloading x13as package..." ; \
+	if [ "x$(FETCH_PROG)" = "xcurl" ] ; then \
+	  curl -L --fail -o "$@" "$(X13AS_URL)" ; \
+	elif [ "x$(FETCH_PROG)" = "xwget" ] ; then \
+	  wget -O "$@" "$(X13AS_URL)" ; \
+	else \
+	  echo "No supported download program (need curl or wget)" ; exit 1 ; \
+	fi
+
+$(TRAMO_SEATS_TARBALL):
+	$(tooldir)/mkinstalldirs $(EXTRAS_DISTDIR)
+	@if [ "x$(download_tramo_seats)" != "xyes" ] ; then exit 0 ; fi ; \
+	echo "Downloading tramo-seats package..." ; \
+	if [ "x$(FETCH_PROG)" = "xcurl" ] ; then \
+	  curl -L --fail -o "$@" "$(TRAMO_SEATS_URL)" ; \
+	elif [ "x$(FETCH_PROG)" = "xwget" ] ; then \
+	  wget -O "$@" "$(TRAMO_SEATS_URL)" ; \
+	else \
+	  echo "No supported download program (need curl or wget)" ; exit 1 ; \
+	fi
+
+$(X13AS_UNPACK_STAMP): $(X13AS_TARBALL)
+	$(tooldir)/mkinstalldirs $(EXTRAS_UNPACKDIR)
+	@if [ "x$(download_x13as)" != "xyes" ] ; then exit 0 ; fi ; \
+	"$(TAR_PROG)" -xzf "$(X13AS_TARBALL)" -C "$(EXTRAS_UNPACKDIR)" ; \
+	touch "$@"
+
+$(TRAMO_SEATS_UNPACK_STAMP): $(TRAMO_SEATS_TARBALL)
+	$(tooldir)/mkinstalldirs $(EXTRAS_UNPACKDIR)
+	@if [ "x$(download_tramo_seats)" != "xyes" ] ; then exit 0 ; fi ; \
+	"$(TAR_PROG)" -xzf "$(TRAMO_SEATS_TARBALL)" -C "$(EXTRAS_UNPACKDIR)" ; \
+	touch "$@"
+
+extras-fetch:
+	@if [ "x$(download_x13as)" = "xyes" ] ; then \
+	  $(MAKE) "$(X13AS_UNPACK_STAMP)" ; \
+	fi
+	@if [ "x$(download_tramo_seats)" = "xyes" ] ; then \
+	  $(MAKE) "$(TRAMO_SEATS_UNPACK_STAMP)" ; \
+	fi
+
+extras-install: extras-fetch
+	@if [ "x$(download_x13as)" = "xyes" ] ; then \
+	  $(tooldir)/mkinstalldirs \
+	    $(DESTDIR)$(datarootdir)/gretl/x13as/bin \
+	    $(DESTDIR)$(datarootdir)/gretl/x13as/docs \
+	    $(DESTDIR)$(datarootdir)/gretl/doc ; \
+	  $(INSTALL_PROGRAM) $(EXTRAS_UNPACKDIR)/opt/x13as/bin/x13as \
+	    $(DESTDIR)$(datarootdir)/gretl/x13as/bin/x13as ; \
+	  $(INSTALL_DATA) $(EXTRAS_UNPACKDIR)/opt/x13as/docs/docx13as.pdf \
+	    $(DESTDIR)$(datarootdir)/gretl/x13as/docs/docx13as.pdf ; \
+	  $(INSTALL_DATA) $(EXTRAS_UNPACKDIR)/opt/x13as/docs/docx13as.pdf \
+	    $(DESTDIR)$(datarootdir)/gretl/doc/docX13AS.pdf ; \
+	  $(INSTALL_DATA) $(EXTRAS_UNPACKDIR)/opt/x13as/docs/qrefx13asunix.pdf \
+	    $(DESTDIR)$(datarootdir)/gretl/doc/qrefx13asunix.pdf ; \
+	fi
+	@if [ "x$(download_tramo_seats)" = "xyes" ] ; then \
+	  $(tooldir)/mkinstalldirs \
+	    $(DESTDIR)$(datarootdir)/gretl/tramo/bin ; \
+	  $(INSTALL_PROGRAM) $(EXTRAS_UNPACKDIR)/opt/tramo/bin/tramo \
+	    $(DESTDIR)$(datarootdir)/gretl/tramo/bin/tramo ; \
+	  $(INSTALL_PROGRAM) $(EXTRAS_UNPACKDIR)/opt/tramo/bin/seats \
+	    $(DESTDIR)$(datarootdir)/gretl/tramo/bin/seats ; \
+	fi
 
 uninstall: uninstall-main uninstall-xdg
 	@:

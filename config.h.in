@@ -50,8 +50,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* X-12-ARIMA support? */
 #undef HAVE_X12A
 
+/* Default path for X-12-ARIMA/X-13ARIMA program (optional) */
+#undef X12A_DEFAULT_PATH
+
 /* TRAMO/SEATS support? */
 #undef HAVE_TRAMO
+
+/* Default path for TRAMO program (optional) */
+#undef TRAMO_DEFAULT_PATH
 
 /* Define if you want GNU readline support */
 #undef HAVE_READLINE

@@ -2833,13 +2833,21 @@ static void load_default_path (char *targ)
 #endif
     } else if (targ == paths.x12a) {
 #ifdef HAVE_X12A
+# ifdef X12A_DEFAULT_PATH
+        strcpy(targ, X12A_DEFAULT_PATH);
+# else
         strcpy(targ, "x12a");
+# endif
 #else
         *targ = '\0';
 #endif
     } else if (targ == paths.tramo) {
 #ifdef HAVE_TRAMO
+# ifdef TRAMO_DEFAULT_PATH
+        strcpy(targ, TRAMO_DEFAULT_PATH);
+# else
         strcpy(targ, "tramo");
+# endif
 #else
         *targ = '\0';
 #endif

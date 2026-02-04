@@ -350,7 +350,7 @@ Alternative to system zip/unzip commands with better library integration.
 
 ---
 
-### `--with-x-12-arima` / `--with-x-12-arima=no`
+### `--with-x-12-arima` / `--with-x-12-arima=no` / `--with-x-12-arima=download`
 **Default:** yes
 **Purpose:** Include X-12-ARIMA seasonal adjustment support
 
@@ -358,13 +358,21 @@ Alternative to system zip/unzip commands with better library integration.
 - Don't need seasonal adjustment
 - X-12-ARIMA binaries not available
 
+**Download mode (`download`):**
+- Downloads the prebuilt **x13as** binary package (64-bit Linux) and installs it under `$(prefix)/share/gretl/x13as/`
+- Sets the default gretl program path to `$(prefix)/share/gretl/x13as/bin/x13as`
+
 ---
 
-### `--with-tramo-seats` / `--with-tramo-seats=no`
+### `--with-tramo-seats` / `--with-tramo-seats=no` / `--with-tramo-seats=download`
 **Default:** yes
 **Purpose:** Include TRAMO/SEATS seasonal adjustment support
 
 Similar to X-12-ARIMA, alternative seasonal adjustment method.
+
+**Download mode (`download`):**
+- Downloads the prebuilt **tramo/seats** binary package (64-bit Linux) and installs it under `$(prefix)/share/gretl/tramo/`
+- Sets the default gretl program path to `$(prefix)/share/gretl/tramo/bin/tramo`
 
 ---
 

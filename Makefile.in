@@ -4,6 +4,11 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 libdir = @libdir@
+includedir = @includedir@
+datarootdir = @datarootdir@
+datadir = @datadir@
+mandir = @mandir@
+localedir = @localedir@
 CC = @CC@
 CXX = @CXX@
 CFLAGS = @CFLAGS@
@@ -17,6 +22,7 @@ build_doc = @build_docs@
 build_addons = @build_addons@
 build_editor = @build_editor@
 use_xdg = @use_xdg@
+use_xdg_utils = @use_xdg_utils@
 
 ifeq ($(CC),)
   CC = gcc
@@ -65,7 +71,7 @@ SUBDIRS = lib cli $(GUIDIR) $(EDDIR) plugin $(PODIR) share $(XDGDIR) $(ADDONSDIR
 ALLSUBDIRS = lib cli gui editor plugin po share tests doc xdg addons
 
 .PHONY : subdirs $(SUBDIRS) clean installdirs install install-strip \
-install-man tags dist distclean check buildstamp
+install-man uninstall uninstall-main uninstall-xdg tags dist distclean check buildstamp
 
 subdirs: $(SUBDIRS)
 
@@ -96,6 +102,108 @@ install-doc: pdfdocs
 
 install-man:
 	$(tooldir)/install_man $(tooldir) $(DESTDIR)$(prefix) $(topsrc)/gretl.1
+
+uninstall: uninstall-main uninstall-xdg
+	@:
+
+uninstall-main:
+	rm -f \
+	  $(DESTDIR)$(bindir)/gretl \
+	  $(DESTDIR)$(bindir)/gretlcli \
+	  $(DESTDIR)$(bindir)/gretl_x11 \
+	  $(DESTDIR)$(bindir)/gretlmpi
+	rm -rf \
+	  $(DESTDIR)$(includedir)/gretl \
+	  $(DESTDIR)$(prefix)/include/gretl \
+	  $(DESTDIR)$(libdir)/gretl-gtk3 \
+	  $(DESTDIR)$(datarootdir)/gretl
+	rm -f \
+	  $(DESTDIR)$(libdir)/libgretl-1.0.la \
+	  $(DESTDIR)$(libdir)/libgretl-1.0.so \
+	  $(DESTDIR)$(libdir)/libgretl-1.0.so.* \
+	  $(DESTDIR)$(libdir)/pkgconfig/gretl.pc \
+	  $(DESTDIR)$(mandir)/man1/gretl.1 \
+	  $(DESTDIR)$(datarootdir)/metainfo/gretl.appdata.xml
+	rm -f $(DESTDIR)$(localedir)/*/LC_MESSAGES/gretl.mo
+	@if [ "x$(DESTDIR)" = "x" ] ; then \
+	  if command -v ldconfig >/dev/null 2>&1 ; then ldconfig ; fi ; \
+	fi
+
+uninstall-xdg:
+	@if [ "x$(use_xdg)" != "xyes" ] ; then exit 0 ; fi ; \
+	if [ "x$(DESTDIR)" != "x" ] || [ "x$(use_xdg_utils)" != "xyes" ] ; then \
+	  rm -f \
+	    $(DESTDIR)$(datadir)/applications/gretl.desktop \
+	    $(DESTDIR)$(datadir)/applications/gretl_edit.desktop \
+	    $(DESTDIR)$(datadir)/mime/packages/gretl.xml \
+	    $(DESTDIR)$(datadir)/icons/hicolor/32x32/mimetypes/application-gretl.data.png \
+	    $(DESTDIR)$(datadir)/icons/hicolor/32x32/mimetypes/application-gretl.bindata.png \
+	    $(DESTDIR)$(datadir)/icons/hicolor/32x32/mimetypes/application-gretl.session.png \
+	    $(DESTDIR)$(datadir)/icons/hicolor/32x32/mimetypes/text-gretl.script.png ; \
+	  for f in 32 48 64 ; do \
+	    rm -f \
+	      $(DESTDIR)$(datadir)/icons/hicolor/$${f}x$${f}/apps/gretl.png \
+	      $(DESTDIR)$(datadir)/icons/hicolor/$${f}x$${f}/apps/gretl_edit.png ; \
+	  done ; \
+	else \
+	  owned_by_pkg() { \
+	    p="$$1" ; \
+	    if [ ! -e "$$p" ] ; then return 1 ; fi ; \
+	    if command -v dpkg >/dev/null 2>&1 && dpkg -S "$$p" >/dev/null 2>&1 ; then return 0 ; fi ; \
+	    if command -v rpm >/dev/null 2>&1 && rpm -qf "$$p" >/dev/null 2>&1 ; then return 0 ; fi ; \
+	    if command -v pacman >/dev/null 2>&1 && pacman -Qo "$$p" >/dev/null 2>&1 ; then return 0 ; fi ; \
+	    return 1 ; \
+	  } ; \
+	  if command -v xdg-desktop-menu >/dev/null 2>&1 ; then \
+	    if ! owned_by_pkg /usr/share/applications/gretl.desktop ; then xdg-desktop-menu uninstall gretl.desktop || true ; fi ; \
+	    if ! owned_by_pkg /usr/share/applications/gretl_edit.desktop ; then xdg-desktop-menu uninstall gretl_edit.desktop || true ; fi ; \
+	  fi ; \
+	  if command -v xdg-mime >/dev/null 2>&1 ; then \
+	    if ! owned_by_pkg /usr/share/mime/packages/gretl.xml ; then xdg-mime uninstall $(topsrc)/xdg/gretl.xml || true ; fi ; \
+	  fi ; \
+	  if command -v xdg-icon-resource >/dev/null 2>&1 ; then \
+	    if [ -e /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.data.png ] && ! owned_by_pkg /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.data.png ; then xdg-icon-resource uninstall --context mimetypes --size 32 application-gretl.data || true ; fi ; \
+	    if [ -e /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.bindata.png ] && ! owned_by_pkg /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.bindata.png ; then xdg-icon-resource uninstall --context mimetypes --size 32 application-gretl.bindata || true ; fi ; \
+	    if [ -e /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.session.png ] && ! owned_by_pkg /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.session.png ; then xdg-icon-resource uninstall --context mimetypes --size 32 application-gretl.session || true ; fi ; \
+	    if [ -e /usr/share/icons/hicolor/32x32/mimetypes/text-gretl.script.png ] && ! owned_by_pkg /usr/share/icons/hicolor/32x32/mimetypes/text-gretl.script.png ; then xdg-icon-resource uninstall --context mimetypes --size 32 text-gretl.script || true ; fi ; \
+	    for f in 32 48 64 ; do \
+	      if [ -e /usr/share/icons/hicolor/$${f}x$${f}/apps/gretl.png ] && ! owned_by_pkg /usr/share/icons/hicolor/$${f}x$${f}/apps/gretl.png ; then xdg-icon-resource uninstall --context apps --size $$f gretl || true ; fi ; \
+	      if [ -e /usr/share/icons/hicolor/$${f}x$${f}/apps/gretl_edit.png ] && ! owned_by_pkg /usr/share/icons/hicolor/$${f}x$${f}/apps/gretl_edit.png ; then xdg-icon-resource uninstall --context apps --size $$f gretl_edit || true ; fi ; \
+	    done ; \
+	  fi ; \
+	  remove_unowned() { \
+	    p="$$1" ; \
+	    if [ ! -e "$$p" ] ; then return 0 ; fi ; \
+	    if command -v dpkg >/dev/null 2>&1 && dpkg -S "$$p" >/dev/null 2>&1 ; then return 0 ; fi ; \
+	    if command -v rpm >/dev/null 2>&1 && rpm -qf "$$p" >/dev/null 2>&1 ; then return 0 ; fi ; \
+	    if command -v pacman >/dev/null 2>&1 && pacman -Qo "$$p" >/dev/null 2>&1 ; then return 0 ; fi ; \
+	    rm -f "$$p" ; \
+	  } ; \
+	  remove_unowned /usr/share/applications/gretl.desktop ; \
+	  remove_unowned /usr/share/applications/gretl_edit.desktop ; \
+	  remove_unowned /usr/share/mime/packages/gretl.xml ; \
+	  remove_unowned /usr/share/mime/application/gretl.data.xml ; \
+	  remove_unowned /usr/share/mime/application/gretl.bindata.xml ; \
+	  remove_unowned /usr/share/mime/application/gretl.session.xml ; \
+	  remove_unowned /usr/share/mime/text/gretl.script.xml ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/apps/gretl.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/apps/gretl_edit.png ; \
+	  remove_unowned /usr/share/icons/hicolor/48x48/apps/gretl.png ; \
+	  remove_unowned /usr/share/icons/hicolor/48x48/apps/gretl_edit.png ; \
+	  remove_unowned /usr/share/icons/hicolor/64x64/apps/gretl.png ; \
+	  remove_unowned /usr/share/icons/hicolor/64x64/apps/gretl_edit.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.data.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.bindata.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/application-gretl.session.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/text-gretl.script.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/gnome-mime-application-gretl.data.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/gnome-mime-application-gretl.bindata.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/gnome-mime-application-gretl.session.png ; \
+	  remove_unowned /usr/share/icons/hicolor/32x32/mimetypes/gnome-mime-text-gretl.script.png ; \
+	  if command -v update-mime-database >/dev/null 2>&1 ; then update-mime-database /usr/share/mime || true ; fi ; \
+	  if command -v update-desktop-database >/dev/null 2>&1 ; then update-desktop-database /usr/share/applications || true ; fi ; \
+	  if command -v gtk-update-icon-cache >/dev/null 2>&1 ; then gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true ; fi ; \
+	fi
 
 tags:
 	etags $(topsrc)/lib/src/*.[ch] $(topsrc)/cli/*.[ch] \
@@ -134,5 +242,3 @@ $(EDDIR): lib
 plugin: lib
 tests: lib
 $(ADDONSDIR): cli
-
-

@@ -38,3 +38,7 @@ For comprehensive build guidance, troubleshooting, and optimization options:
 - BUILD-TROUBLESHOOTING.md - Solutions to common build problems
 - CONFIGURE-OPTIONS.md - Complete reference for all configure options
 - README.packages - Distribution-specific package installation commands
+
+Optional (experimental): the GUI includes **Tools → AI Assistant…** and
+`gretlcli` supports `--ai=...`. This requires an external local CLI
+(`codex` and/or `gemini`) and is documented in `doc/AI_ASSISTANT.md`.

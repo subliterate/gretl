@@ -21,6 +21,14 @@ gretl website, \fBhttp://gretl.sourceforge.net\fR.
 
 Run a script and exit.
 .TP
+\fB\-\-ai\fR=\fIprompt\fR
+
+Call a local LLM CLI (Codex or Gemini), print the reply, and exit.
+.TP
+\fB\-\-ai\-provider\fR=\fIcodex|gemini\fR
+
+Select the provider used with \fB\-\-ai\fR (default: codex).
+.TP
 \fB\-e\fR, \fB\-\-english\fR
 
 Force use of English.
@@ -46,6 +54,15 @@ Give version information and exit.
 .TP 
 \fBHOME\fP
 Specifies the user's home directory
+.TP
+\fBGRETL_CODEX_BIN\fP, \fBGRETL_GEMINI_BIN\fP
+Override the executable used for Codex/Gemini.
+.TP
+\fBGRETL_LLM_PROVIDER\fP
+Default provider for LLM calls (codex|gemini).
+.TP
+\fBGRETL_LLM_TIMEOUT_SEC\fP
+Timeout (seconds) for LLM CLI calls when \fBtimeout\fR(1) is available.
 
 .SH "SEE ALSO"
 \fBgretl\fR(1)

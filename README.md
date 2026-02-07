@@ -41,6 +41,7 @@ See [README.packages](README.packages) for distribution-specific package names.
 | [CONFIGURE-OPTIONS.md](CONFIGURE-OPTIONS.md) | Complete reference for all build options and optimizations |
 | [README.packages](README.packages) | Distribution-specific package names |
 | [README.packagers](README.packagers) | Important notes for package maintainers |
+| [doc/AI_ASSISTANT.md](doc/AI_ASSISTANT.md) | AI Assistant (local Codex/Gemini) |
 
 ## ⚠️ Important Notes for Modern Systems
 
@@ -145,6 +146,15 @@ Check [BUILD-TROUBLESHOOTING.md](BUILD-TROUBLESHOOTING.md) for comprehensive sol
 - Function packages (user-contributed extensions)
 - MPI support for distributed computing
 - R integration
+
+### AI Assistant (experimental)
+
+The GTK GUI includes **Tools → AI Assistant…** which can call a **local**
+LLM CLI (Codex or Gemini) and optionally include read-only session context
+dataset summary, last error, script selection, model summary, and command log.
+
+No API keys are stored in gretl: you install/configure the external CLI(s)
+and gretl spawns them on demand. See `doc/AI_ASSISTANT.md`.
 
 ## 🏗️ Build System
 

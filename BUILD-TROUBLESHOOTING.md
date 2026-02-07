@@ -146,6 +146,30 @@ sudo ldconfig
 
 ---
 
+### Issue 7: AI Assistant does nothing / provider not found
+
+**Symptoms:**
+- In the GUI, **Tools → AI Assistant…** opens but replies are empty or show errors
+- In the CLI, `gretlcli --ai=...` prints “Failed to run … CLI”
+
+**Checks / fixes:**
+```bash
+# Verify the provider binary exists:
+command -v codex
+command -v gemini
+
+# If binaries are not on PATH, override explicitly:
+export GRETL_CODEX_BIN=/full/path/to/codex
+export GRETL_GEMINI_BIN=/full/path/to/gemini
+
+# If the provider hangs, cap runtime (seconds):
+export GRETL_LLM_TIMEOUT_SEC=30
+```
+
+Note: gretl does not manage provider authentication; any sign-in is handled by the external CLI.
+
+---
+
 ## Verifying Your Build
 
 After successful compilation:

@@ -37,6 +37,11 @@ void gui_errmsg (int errcode);
 
 void gui_warnmsg (int errcode);
 
+/* Most GUI error/warn dialogs clear gretl's global error buffer after display.
+   These accessors provide the last message shown to the user (if any). */
+const char *gui_get_last_error_message (void);
+const char *gui_get_last_warning_message (void);
+
 void msgbox (const char *msg, int msgtype, GtkWidget *parent);
 
 void errbox (const char *err);

@@ -5682,6 +5682,9 @@ void errbox_printf (const char *template, ...)
     msgbox(msg, GTK_MESSAGE_ERROR, NULL);
 }
 
+static char *last_err_msg;
+static char *last_warn_msg;
+
 void gui_warnmsg (int errcode)
 {
     const char *msg = NULL;
@@ -5693,6 +5696,8 @@ void gui_warnmsg (int errcode)
     }
 
     if (msg != NULL && *msg != '\0') {
+        g_free(last_warn_msg);
+        last_warn_msg = g_strdup(msg);
         warnbox(msg);
     }
 }
@@ -5705,13 +5710,27 @@ void gui_errmsg (int errcode)
         const char *msg = errmsg_get_with_default(errcode);
 
         if (msg != NULL && *msg != '\0') {
+            g_free(last_err_msg);
+            last_err_msg = g_strdup(msg);
             errbox(msg);
             /* avoid duplicating this error message */
             gretl_error_clear();
         } else {
+            g_free(last_err_msg);
+            last_err_msg = g_strdup(_("Unspecified error"));
             errbox(_("Unspecified error"));
         }
     }
+}
+
+const char *gui_get_last_error_message (void)
+{
+    return last_err_msg;
+}
+
+const char *gui_get_last_warning_message (void)
+{
+    return last_warn_msg;
 }
 
 void infobox (const char *info)

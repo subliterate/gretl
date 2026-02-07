@@ -123,6 +123,29 @@ sudo apt-get install libopenmpi-dev mpi-default-bin
 
 ---
 
+### Issue 6: Runtime error "libgretl-1.0.so.54: cannot open shared object file"
+
+**Error message:**
+```
+gretlcli: error while loading shared libraries: libgretl-1.0.so.54: cannot open shared object file: No such file or directory
+```
+
+**Common causes:**
+- You ran the *real* binary under `./cli/.libs/` (or `./gui/.libs/`) instead of the libtool wrapper.
+- You installed into `/usr/local` but your system’s dynamic linker cache wasn’t updated.
+
+**Solutions:**
+```bash
+# In the build tree, always run the wrapper scripts:
+./cli/gretlcli --version
+./gui/gretl_x11 --version
+
+# After "sudo make install", refresh the linker cache (system-wide):
+sudo ldconfig
+```
+
+---
+
 ## Verifying Your Build
 
 After successful compilation:
@@ -185,4 +208,4 @@ If you encounter build issues not covered here, please:
 
 ---
 
-Last updated: 2026-02-02
+Last updated: 2026-02-07

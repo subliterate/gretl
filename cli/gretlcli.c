@@ -72,6 +72,8 @@ int data_status;
 int gui_exec;
 char linebak[MAXLINE];      /* for storing comments */
 char *line_read;
+static char *ai_prompt;
+static char *ai_provider;
 
 static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn);
 static int push_input_file (FILE *fp);
@@ -127,6 +129,12 @@ static int parse_options (int *pargc, char ***pargv, gretlopt *popt,
 	    opt |= OPT_BATCH;
         } else if (!strncmp(s, "--scriptopt=", 12)) {
             *scriptval = atof(s + 12);
+        } else if (!strncmp(s, "--ai=", 5)) {
+            g_free(ai_prompt);
+            ai_prompt = g_strdup(s + 5);
+        } else if (!strncmp(s, "--ai-provider=", 14)) {
+            g_free(ai_provider);
+            ai_provider = g_strdup(s + 14);
         } else if (*s == '-' && *(s+1) != '\0') {
             /* spurious option? */
             fprintf(stderr, "Bad option: %s\n", s);
@@ -181,7 +189,10 @@ static void usage (int err)
 
     printf(_("\nSpecial batch-mode option:\n"
              " --scriptopt=<value> sets a scalar value, accessible to a script\n"
-             " under the name \"scriptopt\"\n\n"));
+             " under the name \"scriptopt\"\n\n"
+             "AI helper (one-shot; prints text and exits):\n"
+             " --ai=<prompt> calls a local LLM CLI\n"
+             " --ai-provider=codex|gemini selects provider\n\n"));
 
     if (err) {
         exit(EXIT_FAILURE);
@@ -694,6 +705,8 @@ int main (int argc, char *argv[])
     }
 
     runfile[0] = filearg[0] = '\0';
+    ai_prompt = NULL;
+    ai_provider = NULL;
 
     if (argc < 2) {
         force_language(LANG_AUTO);
@@ -765,6 +778,39 @@ int main (int argc, char *argv[])
     }
 
     libgretl_init();
+
+    if (ai_prompt != NULL && *ai_prompt != '\0') {
+        GretlLLMProvider p = GRETL_LLM_NONE;
+        char *reply = NULL;
+        int aierr = 0;
+
+        if (ai_provider != NULL && *ai_provider != '\0') {
+            aierr = gretl_llm_provider_from_string(ai_provider, &p);
+        }
+        if (!aierr) {
+            aierr = gretl_llm_complete(p, ai_prompt, &reply);
+        }
+        if (aierr) {
+            const char *msg = gretl_errmsg_get();
+            fprintf(stderr, "%s\n", (msg != NULL && *msg != '\0') ? msg : "LLM call failed");
+            g_free(reply);
+            g_free(ai_prompt);
+            g_free(ai_provider);
+            return EXIT_FAILURE;
+        }
+
+        if (reply != NULL) {
+            fputs(reply, stdout);
+            if (reply[0] != '\0' && reply[strlen(reply) - 1] != '\n') {
+                fputc('\n', stdout);
+            }
+        }
+
+        g_free(reply);
+        g_free(ai_prompt);
+        g_free(ai_provider);
+        return EXIT_SUCCESS;
+    }
 
     if (gui_exec) {
 	char tstr[64];

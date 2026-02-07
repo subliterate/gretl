@@ -51,6 +51,7 @@
 #include "gpt_control.h"
 #include "gpt_dialog.h"
 #include "gretl_ipc.h"
+#include "ai_assistant.h"
 
 #ifndef G_OS_WIN32
 # include <unistd.h>
@@ -1912,6 +1913,7 @@ GtkActionEntry main_entries[] = {
     { "SetSeed", NULL, N_("_Seed for random numbers"), NULL, NULL, G_CALLBACK(rand_seed_dialog) },
     { "CommandLog", NULL, N_("_Command log"), NULL, NULL, G_CALLBACK(view_command_log) },
     { "ShowConsole", NULL, N_("_Gretl console"), NULL, NULL, G_CALLBACK(gretl_show_console) },
+    { "AIAssistant", GRETL_STOCK_QUERY, N_("_AI Assistant..."), NULL, NULL, G_CALLBACK(show_ai_assistant) },
     { "Gnuplot", NULL, N_("_Gnuplot"), NULL, NULL, G_CALLBACK(launch_gnuplot_interactive) },
     { "StartR", NULL, N_("Start GNU _R"), NULL, NULL, G_CALLBACK(start_R_callback) },
     { "ColorTool", NULL, N_("Color tool"), NULL, NULL, G_CALLBACK(show_color_tool) },

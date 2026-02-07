@@ -175,6 +175,7 @@ vpath %.c $(topsrc)/gui
 vpath %.h $(topsrc)/gui
 
 SRCS = about.c \
+	ai_assistant.c \
 	base_utils.c \
 	bundle_menus.c \
 	calculator.c \
@@ -261,6 +262,8 @@ ifeq ($(gtksv_completion),yes)
   SRCS += completions.c
 endif
 
+ORIGIN_RPATH = -Wl,-z,origin -Wl,-rpath,'$$ORIGIN/../lib' -Wl,-rpath,'$$ORIGIN/../lib64'
+
 PNG16 := $(wildcard $(topsrc)/share/icons/16x16/*.png)
 PNG24 := $(wildcard $(topsrc)/share/icons/24x24/*.png)
 
@@ -275,7 +278,7 @@ all: $(PROG) gretl.lang NEWS gretl-icons.xml
 
 $(PROG): .deps $(OBJS) $(HACK_OBJ) $(WINOBJ) $(MAC_OBJ)
 	$(LDECHO)
-	$(AMP)$(LIBTOOL) --mode=link $(CCV) $(WINGUI) $(LDFLAGS) -o $@ $(OBJS) \
+	$(AMP)$(LIBTOOL) --mode=link $(CCV) $(WINGUI) $(LDFLAGS) $(ORIGIN_RPATH) -o $@ $(OBJS) \
 	$(HACK_OBJ) $(WINOBJ) $(MAC_OBJ) $(LIBS) $(MACLIB) $(WINLIBS)
 
 $(HACK_OBJ): $(HACK_SRC) $(HACK_HDR)
@@ -383,4 +386,3 @@ clean:
 
 distclean: clean
 	rm -f Makefile debug
-

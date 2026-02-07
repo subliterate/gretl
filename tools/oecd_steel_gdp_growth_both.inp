@@ -1,0 +1,97 @@
+set echo off
+set messages on
+
+# This script expects a string variable named "outdir" to be defined
+# by the caller (see tools/run_oecd_steel_gdp_growth_both.inp).
+
+string annual = outdir ~ "/oecd_steel_panel_annual.gdt"
+string monthly = outdir ~ "/oecd_steel_panel_monthly.gdt"
+string resfile = outdir ~ "/oecd_steel_gdp_growth_results.txt"
+
+# -------------------------
+# Annual panel: GDP growth
+# -------------------------
+open "@annual" --quiet --preserve
+
+outfile "@resfile"
+    printf "OECD steel-GDP exploration (gretl script)\n"
+    printf "Generated: %s\n\n", strftime($now[1], "%Y-%m-%d %H:%M")
+    printf "Input (annual):  %s\n", annual
+    printf "Input (monthly): %s\n\n", monthly
+
+    printf "=== ANNUAL PANEL MODELS ===\n\n"
+
+    printf "Variables present:\n"
+    printf "  y: gdp_growth_pc_g1\n"
+    printf "  steel proxies: c24_gva_share, c25_gva_share, steel_capacity_tonnes\n"
+    printf "  steel price proxies (deflators): c24_gva_deflator_ix_dr, c25_gva_deflator_ix_dr\n\n"
+
+    series lcap = log(steel_capacity_tonnes)
+    series cap_g = 100*(lcap - lcap(-1))
+
+    series c24_share_l1 = c24_gva_share(-1)
+    series c25_share_l1 = c25_gva_share(-1)
+    series cap_g_l1 = cap_g(-1)
+
+    series c24_real_g = 100*(log(c24_gva_real_xdc_lr) - log(c24_gva_real_xdc_lr(-1)))
+    series c25_real_g = 100*(log(c25_gva_real_xdc_lr) - log(c25_gva_real_xdc_lr(-1)))
+
+    series c24_defl_pi = 100*(log(c24_gva_deflator_ix_dr) - log(c24_gva_deflator_ix_dr(-1)))
+    series c25_defl_pi = 100*(log(c25_gva_deflator_ix_dr) - log(c25_gva_deflator_ix_dr(-1)))
+
+    printf "Summary stats (annual):\n"
+    summary gdp_growth_pc_g1 c24_gva_share c25_gva_share cap_g c24_real_g c25_real_g c24_defl_pi c25_defl_pi --simple
+    printf "\n"
+
+    printf "--- Model A1: FE + time dummies, lagged shares + lagged cap growth ---\n"
+    panel gdp_growth_pc_g1 const c24_share_l1 c25_share_l1 cap_g_l1 --fixed-effects --time-dummies --robust
+    printf "\n"
+
+    printf "--- Model A2: pooled OLS + time dummies, lagged shares + lagged cap growth ---\n"
+    panel gdp_growth_pc_g1 const c24_share_l1 c25_share_l1 cap_g_l1 --pooled --time-dummies --robust
+    printf "\n"
+
+    printf "--- Model B1: FE + time dummies, steel sector real growth + steel price inflation ---\n"
+    panel gdp_growth_pc_g1 const c24_real_g(-1) c25_real_g(-1) c24_defl_pi(-1) c25_defl_pi(-1) --fixed-effects --time-dummies --robust
+    printf "\n"
+
+    printf "--- Model B2: FE + time dummies, combined shares + sector growth ---\n"
+    panel gdp_growth_pc_g1 const c24_share_l1 c25_share_l1 c24_real_g(-1) c25_real_g(-1) cap_g_l1 --fixed-effects --time-dummies --robust
+    printf "\n"
+
+    printf "=== END ANNUAL ===\n\n"
+end outfile
+
+# -----------------------------------------
+# Monthly panel: GDP proxy growth from index
+# -----------------------------------------
+open "@monthly" --quiet --preserve
+
+outfile "@resfile" --append
+    printf "=== MONTHLY PANEL MODELS ===\n\n"
+
+    printf "Note: monthly GDP is an interpolated index from quarterly real GDP.\n"
+    printf "We construct growth rates from gdp_ix_lr.\n\n"
+
+    series lgdp_m = log(gdp_ix_lr)
+    series gdp_mom = 100*(lgdp_m - lgdp_m(-1))
+    series gdp_yoy = 100*(lgdp_m - lgdp_m(-12))
+
+    series lcap_m = log(steel_capacity_tonnes)
+    series cap_yoy = 100*(lcap_m - lcap_m(-12))
+
+    printf "Summary stats (monthly):\n"
+    summary gdp_mom gdp_yoy c24_gva_share c25_gva_share cap_yoy --simple
+    printf "\n"
+
+    printf "--- Model M1: FE, YoY GDP growth on steel shares + capacity YoY ---\n"
+    panel gdp_yoy const c24_gva_share c25_gva_share cap_yoy --fixed-effects
+    printf "\n"
+
+    printf "--- Model M2: FE, MoM GDP growth on steel shares + capacity YoY ---\n"
+    panel gdp_mom const c24_gva_share c25_gva_share cap_yoy --fixed-effects
+    printf "\n"
+
+    printf "=== END MONTHLY ===\n\n"
+    printf "Wrote results to: %s\n", resfile
+end outfile

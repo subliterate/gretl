@@ -1,0 +1,7 @@
+set echo off
+set messages on
+
+# Run this script from within the gretl repo root, or edit outdir below.
+string outdir = "oecd_steel_out"
+
+include tools/oecd_steel_gdp_growth_both.inp

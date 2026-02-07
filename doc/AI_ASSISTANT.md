@@ -63,7 +63,7 @@ Binary overrides:
 
 Timeout (Linux): gretl wraps the spawned process with `timeout` if available:
 
-- `GRETL_LLM_TIMEOUT_SEC` (default 60; range 1–3600)
+- `GRETL_LLM_TIMEOUT_SEC` (default 300; range 1–3600)
 
 ## Implementation overview
 

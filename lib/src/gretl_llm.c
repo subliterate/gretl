@@ -27,7 +27,7 @@
 #endif
 
 #define GRETL_LLM_MAX_REPLY (2 * 1024 * 1024)
-#define GRETL_LLM_DEFAULT_TIMEOUT_SEC 60
+#define GRETL_LLM_DEFAULT_TIMEOUT_SEC 300
 
 static const char *default_codex_bin (void)
 {
@@ -93,6 +93,48 @@ static gchar **argv_wrap_timeout (gchar *const *base_argv)
 static void free_spawn_argv (gchar **argv)
 {
     g_strfreev(argv);
+}
+
+static int check_child_status_buf (const char *prog,
+                                   gint status,
+                                   const gchar *stdout_buf,
+                                   const gchar *stderr_buf,
+                                   char **errmsg)
+{
+    GError *gerr = NULL;
+
+    if (g_spawn_check_exit_status(status, &gerr)) {
+        return 0;
+    }
+
+    if (errmsg != NULL) {
+        if (gerr != NULL && gerr->message != NULL) {
+            *errmsg = g_strdup_printf("%s failed: %s", prog, gerr->message);
+        } else {
+            *errmsg = g_strdup_printf("%s failed", prog);
+        }
+
+        if (status == (124 << 8) || status == (137 << 8)) {
+            gchar *tmp = *errmsg;
+            *errmsg = g_strdup_printf("%s (timed out; set GRETL_LLM_TIMEOUT_SEC)", tmp);
+            g_free(tmp);
+        }
+
+        if (stderr_buf != NULL && *stderr_buf != '\0') {
+            gchar *tmp = *errmsg;
+            *errmsg = g_strdup_printf("%s\n\nstderr:\n%s", tmp, stderr_buf);
+            g_free(tmp);
+        } else if (stdout_buf != NULL && *stdout_buf != '\0') {
+            gchar *tmp = *errmsg;
+            *errmsg = g_strdup_printf("%s\n\nstdout:\n%s", tmp, stdout_buf);
+            g_free(tmp);
+        }
+    }
+
+    if (gerr != NULL) {
+        g_error_free(gerr);
+    }
+    return E_EXTERNAL;
 }
 
 static gchar *find_executable (GretlLLMProvider provider)
@@ -470,6 +512,23 @@ static int run_codex_cli (const char *bin, const char *prompt, char **reply)
         free_spawn_argv(argv);
     }
 
+    if (!g_spawn_check_exit_status(status, NULL)) {
+        if (status == (124 << 8) || status == (137 << 8)) {
+            gretl_errmsg_set("codex timed out (set GRETL_LLM_TIMEOUT_SEC)");
+        } else if (stderr_buf != NULL && *stderr_buf != '\0') {
+            gretl_errmsg_sprintf("codex failed (stderr follows)\n%s", stderr_buf);
+        } else if (stdout_buf != NULL && *stdout_buf != '\0') {
+            gretl_errmsg_sprintf("codex failed (stdout follows)\n%s", stdout_buf);
+        } else {
+            gretl_errmsg_set("codex failed");
+        }
+        g_unlink(tmpname);
+        g_free(tmpname);
+        g_free(stdout_buf);
+        g_free(stderr_buf);
+        return E_EXTERNAL;
+    }
+
     err = read_reply_file(tmpname, reply);
     g_unlink(tmpname);
     g_free(tmpname);
@@ -538,6 +597,14 @@ static int run_codex_cli_buf (const char *bin,
         free_spawn_argv(argv);
     }
 
+    if (check_child_status_buf("codex", status, stdout_buf, stderr_buf, errmsg)) {
+        g_unlink(tmpname);
+        g_free(tmpname);
+        g_free(stdout_buf);
+        g_free(stderr_buf);
+        return E_EXTERNAL;
+    }
+
     err = read_reply_file_buf(tmpname, reply, errmsg);
     g_unlink(tmpname);
     g_free(tmpname);
@@ -589,6 +656,21 @@ static int run_gemini_cli (const char *bin, const char *prompt, char **reply)
             return set_spawn_error("Failed to run gemini CLI", gerr);
         }
         free_spawn_argv(argv);
+    }
+
+    if (!g_spawn_check_exit_status(status, NULL)) {
+        if (status == (124 << 8) || status == (137 << 8)) {
+            gretl_errmsg_set("gemini timed out (set GRETL_LLM_TIMEOUT_SEC)");
+        } else if (stderr_buf != NULL && *stderr_buf != '\0') {
+            gretl_errmsg_sprintf("gemini failed (stderr follows)\n%s", stderr_buf);
+        } else if (stdout_buf != NULL && *stdout_buf != '\0') {
+            gretl_errmsg_sprintf("gemini failed (stdout follows)\n%s", stdout_buf);
+        } else {
+            gretl_errmsg_set("gemini failed");
+        }
+        g_free(stdout_buf);
+        g_free(stderr_buf);
+        return E_EXTERNAL;
     }
 
     if (stderr_buf != NULL && strstr(stderr_buf, "An unexpected critical error occurred") != NULL) {
@@ -666,6 +748,12 @@ static int run_gemini_cli_buf (const char *bin,
             return set_spawn_error_buf("Failed to run gemini CLI", gerr, errmsg);
         }
         free_spawn_argv(argv);
+    }
+
+    if (check_child_status_buf("gemini", status, stdout_buf, stderr_buf, errmsg)) {
+        g_free(stdout_buf);
+        g_free(stderr_buf);
+        return E_EXTERNAL;
     }
 
     if (stderr_buf != NULL && strstr(stderr_buf, "An unexpected critical error occurred") != NULL) {

@@ -63,6 +63,10 @@ Default provider for LLM calls (codex|gemini).
 .TP
 \fBGRETL_LLM_TIMEOUT_SEC\fP
 Timeout (seconds) for LLM CLI calls when \fBtimeout\fR(1) is available.
+.TP
+\fBGRETL_LLM_UNSAFE\fP
+If set to a nonzero value, gretl invokes Codex with
+\fB\-\-dangerously\-bypass\-approvals\-and\-sandbox\fR (not recommended).
 
 .SH "SEE ALSO"
 \fBgretl\fR(1)

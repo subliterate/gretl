@@ -72,6 +72,25 @@ Unsafe mode (Codex only):
 
 This can allow the provider to execute shell commands and write files without prompts. It is not recommended as a default for general users; prefer keeping the assistant in read-only mode and using the built-in read-only tools.
 
+## Approvals, sandbox, and MCP servers
+
+### Codex approvals/sandbox
+
+By default, gretl runs Codex in a restricted mode (no approvals, read-only sandbox). This is intentional: it prevents “agentic” shell execution from inside the gretl GUI.
+
+If you explicitly opt in via `GRETL_LLM_UNSAFE=1`, gretl will invoke Codex with `--dangerously-bypass-approvals-and-sandbox`. Use this only if you understand the risks and you trust the prompts/context being sent.
+
+### MCP servers
+
+Gretl does not manage MCP servers. If you want Codex to use MCP tools, configure them in Codex itself (typically via `~/.codex/config.toml` or the `codex mcp` subcommands):
+
+```bash
+codex mcp list
+codex mcp add --help
+```
+
+Note: Gemini is invoked with MCP/tools disabled by default to avoid hangs in non-interactive mode.
+
 ## Implementation overview
 
 Key modules:

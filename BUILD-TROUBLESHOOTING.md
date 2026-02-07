@@ -164,9 +164,13 @@ export GRETL_GEMINI_BIN=/full/path/to/gemini
 
 # If the provider hangs, cap runtime (seconds):
 export GRETL_LLM_TIMEOUT_SEC=30
+
+# If you explicitly want Codex to run "unsafe" (bypass approvals/sandbox):
+export GRETL_LLM_UNSAFE=1
 ```
 
 Note: gretl does not manage provider authentication; any sign-in is handled by the external CLI.
+MCP server configuration (if desired) is also managed by the external CLI (e.g. `codex mcp list`).
 
 ---
 

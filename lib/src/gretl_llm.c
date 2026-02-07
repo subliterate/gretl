@@ -57,6 +57,19 @@ static int llm_timeout_seconds (void)
     return (int) v;
 }
 
+static gboolean codex_dangerous_default (void)
+{
+    const char *s = getenv("GRETL_LLM_UNSAFE");
+    if (s != NULL && *s != '\0' && strcmp(s, "0")) {
+        return TRUE;
+    }
+    s = getenv("GRETL_CODEX_DANGEROUS");
+    if (s != NULL && *s != '\0' && strcmp(s, "0")) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static gchar **argv_wrap_timeout (gchar *const *base_argv)
 {
 #ifdef WIN32
@@ -487,7 +500,7 @@ static int run_codex_cli (const char *bin, const char *prompt, char **reply)
 #endif
 
     {
-        gchar *base_argv[] = {
+        gchar *base_argv_safe[] = {
             (gchar *) bin,
             (gchar *) "-a", (gchar *) "never",
             (gchar *) "exec",
@@ -498,6 +511,17 @@ static int run_codex_cli (const char *bin, const char *prompt, char **reply)
             (gchar *) prompt,
             NULL
         };
+        gchar *base_argv_danger[] = {
+            (gchar *) bin,
+            (gchar *) "exec",
+            (gchar *) "--dangerously-bypass-approvals-and-sandbox",
+            (gchar *) "--color", (gchar *) "never",
+            (gchar *) "--skip-git-repo-check",
+            (gchar *) "--output-last-message", tmpname,
+            (gchar *) prompt,
+            NULL
+        };
+        gchar **base_argv = codex_dangerous_default() ? base_argv_danger : base_argv_safe;
 
         argv = argv_wrap_timeout(base_argv);
         if (!g_spawn_sync(NULL, argv, NULL, G_SPAWN_STDIN_FROM_DEV_NULL, NULL, NULL,
@@ -572,7 +596,7 @@ static int run_codex_cli_buf (const char *bin,
 #endif
 
     {
-        gchar *base_argv[] = {
+        gchar *base_argv_safe[] = {
             (gchar *) bin,
             (gchar *) "-a", (gchar *) "never",
             (gchar *) "exec",
@@ -583,6 +607,17 @@ static int run_codex_cli_buf (const char *bin,
             (gchar *) prompt,
             NULL
         };
+        gchar *base_argv_danger[] = {
+            (gchar *) bin,
+            (gchar *) "exec",
+            (gchar *) "--dangerously-bypass-approvals-and-sandbox",
+            (gchar *) "--color", (gchar *) "never",
+            (gchar *) "--skip-git-repo-check",
+            (gchar *) "--output-last-message", tmpname,
+            (gchar *) prompt,
+            NULL
+        };
+        gchar **base_argv = codex_dangerous_default() ? base_argv_danger : base_argv_safe;
 
         argv = argv_wrap_timeout(base_argv);
         if (!g_spawn_sync(NULL, argv, NULL, G_SPAWN_STDIN_FROM_DEV_NULL, NULL, NULL,

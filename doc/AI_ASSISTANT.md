@@ -65,6 +65,13 @@ Timeout (Linux): gretl wraps the spawned process with `timeout` if available:
 
 - `GRETL_LLM_TIMEOUT_SEC` (default 300; range 1–3600)
 
+Unsafe mode (Codex only):
+
+- `GRETL_LLM_UNSAFE=1` (or `GRETL_CODEX_DANGEROUS=1`) makes gretl call:
+  `codex exec --dangerously-bypass-approvals-and-sandbox ...`
+
+This can allow the provider to execute shell commands and write files without prompts. It is not recommended as a default for general users; prefer keeping the assistant in read-only mode and using the built-in read-only tools.
+
 ## Implementation overview
 
 Key modules:

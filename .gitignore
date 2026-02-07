@@ -53,6 +53,10 @@ mkpnglist
 gretl-icons.xml
 gretl.lang
 
+# GUI build byproducts
+gui/NEWS
+gui/gretl-icons.gresource
+
 # Spec files
 *.spec
 
@@ -64,3 +68,13 @@ po/POTFILES
 # Generated shell scripts
 *.sh
 !tools/*.sh
+
+# Session/output scratch files
+session.inp
+tools/session.inp
+oecd_steel_out/
+tools/oecd_steel_out/
+
+# Generated binary index for BCIH example database
+share/bcih/fedstl.bin
+share/bcih/mkbin
